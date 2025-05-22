@@ -1,0 +1,51 @@
+.contenedor {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+
+.card {
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  width: 250px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: white;
+}
+
+.miniatura {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  border-bottom: 1px solid #ccc;
+}
+
+.info {
+  padding: 10px;
+  text-align: center;
+}
+
+.botones {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-around;
+}
+
+.botonVer,
+.botonDescargar {
+  padding: 6px 12px;
+  border: none;
+  text-decoration: none;
+  border-radius: 5px;
+  font-weight: bold;
+  color: white;
+}
+
+.botonVer {
+  background-color: #007bff;
+}
+
+.botonDescargar {
+  background-color: #28a745;
+}

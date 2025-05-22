@@ -1,0 +1,93 @@
+/* Contenedor principal */
+/* Contenedor principal */
+.Downloadcontainer {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 40px;
+  font-family: Arial, sans-serif;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  text-align: center;
+}
+
+/* Estilos internos */
+.Downloadp-4 {
+  padding: 1rem;
+}
+
+/* Título principal */
+.Downloadcontainer h2 {
+  font-size: 28px;
+  margin-bottom: 30px;
+  color: #215e93;
+}
+
+/* Tabla de documentos (si aplica dentro de <Document />) */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 30px;
+}
+
+.table th,
+.table td {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.table th {
+  background-color: #215e93;
+  color: white;
+  font-weight: bold;
+}
+
+.table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.table tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Botón para cerrar sesión */
+.Logout {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+
+  width: 100px;
+  background: #d32f2f;
+  border: 2px solid rgba(255, 255, 255, .2);
+  backdrop-filter: blur(30px);
+  box-shadow: 0 0 10px rgba(0, 0, 0, .2);
+  color: #fff;
+  border-radius: 15px;
+  padding: 15px 20px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.Logout:hover {
+  background-color: #d32f2f;
+}
+
+/* Botón Ver */
+button {
+  background-color: #215e93;
+  color: white;
+  padding: 10px 20px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #1a4e7a;
+}
