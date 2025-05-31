@@ -2,13 +2,14 @@ const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs'); // Añade esta línea
+const fs = require('fs');
 const db = require('./db');
+const pdfParse = require('pdf-parse');
 
 const app = express();
 app.use(cors());
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*"); // o pon tu origen exacto en vez de "*"
+  res.header("Access-Control-Allow-Origin", "*"); 
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
@@ -24,20 +25,22 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Configuración de multer (la tuya está bien)
+// Configuración de multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
-    const uniqueName = Date.now() + '-' + file.originalname;
+    const original = file.originalname.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const uniqueName = Date.now() + '-' + file.originalname;
     cb(null, uniqueName);
   }
 });
 const upload = multer({ storage });
 
+
 // Ruta para recibir datos del formulario
-app.post('/api/documentos', upload.array('files'), (req, res) => {
+app.post('/api/documentos', upload.array('files'), async (req, res) => {
   console.log('Solicitud recibida');
   console.log('Cuerpo:', req.body);
   console.log('Archivos:', req.files);
@@ -57,40 +60,54 @@ app.post('/api/documentos', upload.array('files'), (req, res) => {
     return res.status(400).json({ error: 'Faltan campos obligatorios' });
   }
 
-  const pdfPaths = req.files.map(file => `/uploads/${file.filename}`);
+  try {
+    for (const file of req.files) {
+      const filePath = path.join(uploadsDir, file.filename);
 
-  const sql = `INSERT INTO documentosdigitalizados 
-    (Id_documentos, fecha_creacion, fecha_ingresoalsistema, Nombre_usuario, url_pdf)
-    VALUES (?, ?, ?, ?, ?)`;
+      // Validación por tamaño mínimo
+      if (file.size < 5000) {
+        fs.unlinkSync(filePath);
+        return res.status(400).json({ error: `El archivo ${file.originalname} es demasiado pequeño.` });
+      }
 
-  const values = [
-    campo1,
-    campo2,
-    campo3,
-    campo4,
-    pdfPaths.join(';')
-  ];
+      let data;
+      try {
+        const dataBuffer = fs.readFileSync(filePath);
+        data = await pdfParse(dataBuffer);
+      } catch (err) {
+        fs.unlinkSync(filePath);
+        return res.status(400).json({ error: `El archivo ${file.originalname} está protegido con contraseña o es ilegible.` });
+      }
 
-  console.log('Valores a insertar:', values);
-
-  db.query(sql, values, (err, result) => {
-    if (err) {
-      console.error('Error al insertar en la base de datos:', err);
-      // Elimina los archivos subidos
-      req.files.forEach(file => {
-        fs.unlinkSync(path.join(uploadsDir, file.filename));
-      });
-      return res.status(500).json({ 
-        error: 'Error al guardar el documento.',
-        details: err.message 
-      });
+      // Validar que tenga texto o contenido útil
+      if (!data.text.trim()) {
+        fs.unlinkSync(filePath);
+        return res.status(400).json({ error: `El archivo ${file.originalname} está vacío.` });
+      }
     }
-    res.json({ 
-      message: 'Documento guardado exitosamente.', 
-      urls: pdfPaths,
-      id: result.insertId 
+
+    // Si todos los archivos pasaron la validación
+    const pdfPaths = req.files.map(file => `/uploads/${file.filename}`);
+
+    const sql = `INSERT INTO documentosdigitalizados 
+      (Id_documentos, fecha_creacion, fecha_ingresoalsistema, Nombre_usuario, url_pdf)
+      VALUES (?, ?, ?, ?, ?)`;
+
+    const values = [campo1, campo2, campo3, campo4, pdfPaths.join(';')];
+
+    db.query(sql, values, (err, result) => {
+      if (err) {
+        console.error('Error al insertar en la base de datos:', err);
+        req.files.forEach(file => fs.unlinkSync(path.join(uploadsDir, file.filename)));
+        return res.status(500).json({ error: 'Error al guardar el documento.', details: err.message });
+      }
+      res.json({ message: 'Documento guardado exitosamente.', urls: pdfPaths, id: result.insertId });
     });
-  });
+  } catch (err) {
+    console.error(`Error al procesar ${file.originalname}:`, error.message);
+  fs.unlinkSync(filePath);
+  return res.status(400).json({ error: `El archivo ${file.originalname} está protegido o dañado.` });
+  }
 });
 
 // Obtener todos los propietarios únicos
