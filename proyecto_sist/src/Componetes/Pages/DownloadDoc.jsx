@@ -15,7 +15,7 @@ function DownloadDoc() {
     try {
       const response = await fetch('http://localhost:3001/api/propietarios');
       const data = await response.json();
-      console.log('Propietarios recibidos:', data); // <-- AQUÍ VA
+      console.log('Propietarios recibidos:', data); 
       setPropietarios(['Todos', ...data]);
     } catch (error) {
       console.error('Error al obtener propietarios:', error);
